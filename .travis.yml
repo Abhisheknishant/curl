@@ -314,7 +314,289 @@ jobs:
         - *clang_packages
         - libpsl-dev
         - libbrotli-dev
+  
+   - env:
+    - T=normal C=--with-libssh
+    # Avoid bionic, its pre-release libssh version triggers deprecation warnings.
+    arch: arm64
+    dist: focal
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - cmake
+        - valgrind
+        - libev-dev
+        - libc-ares-dev
+        - g++-8
+        - stunnel4
+        - libidn2-dev
+        - gnutls-bin
+        # The above list is common_packages minus impacket.
+        - libssh-dev
   - env:
+    - T=normal C="--enable-ares"
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+  - env:
+    - T=normal C="--enable-mqtt"
+    arch: amr64
+  - env:
+    - T=normal C="--disable-proxy"
+    arch: arm64
+  - env:
+    - T=normal C="--disable-verbose" CPPFLAGS="-Wno-variadic-macros" NOTESTS=1
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *common_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=novalgrind BORINGSSL=yes C="--with-ssl=$HOME/boringssl" LD_LIBRARY_PATH=/home/travis/boringssl/lib:/usr/local/lib
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+    before_install:
+    - eval "$(gimme stable)"; gimme --list  # Install latest Go (for boringssl)
+  - env:
+    - T=novalgrind QUICHE="yes" C="--with-ssl=$HOME/quiche/deps/boringssl --with-quiche=$HOME/quiche/target/release --enable-alt-svc" LD_LIBRARY_PATH=$HOME/quiche/target/release:/usr/local/lib
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+    before_install:
+    - eval "$(gimme stable)"; gimme --list  # Install latest Go (for boringssl)
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *common_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=novalgrind NGTCP2=yes C="--with-ssl=$HOME/ngbuild --with-ngtcp2=$HOME/ngbuild --with-nghttp3=$HOME/ngbuild --enable-alt-svc" NOTESTS=
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *common_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=novalgrind NGTCP2=yes GNUTLS=yes C="PKG_CONFIG_PATH=$HOME/ngbuild --without-ssl --with-gnutls=$HOME/ngbuild --with-ngtcp2=$HOME/ngbuild --with-nghttp3=$HOME/ngbuild --enable-alt-svc" NOTESTS=
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *common_packages
+        - libpsl-dev
+        - libbrotli-dev
+        - autogen
+        - automake
+        - autopoint
+        - bison
+        - gperf
+        - libgmp-dev
+        - libopts25-dev
+        - libp11-kit-dev
+        - libtasn1-6-dev
+        - nettle-dev
+  - env:
+    - T=debug-wolfssl C="--with-wolfssl --without-ssl"
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *common_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=debug-mesalink C="--with-mesalink --without-ssl"
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *common_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=debug
+    - &clang OVERRIDE_CC="CC=clang-9" OVERRIDE_CXX="CXX=clang++-9"
+    arch: arm64
+    compiler: clang
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - &clang_packages [*common_packages, clang-9]
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=debug C="--enable-alt-svc"
+    - *clang
+    arch: arm64
+    compiler: clang
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *clang_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=debug C="--with-mbedtls --without-ssl"
+    - *clang
+    arch: arm64
+    compiler: clang
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *clang_packages
+        - libpsl-dev
+        - libbrotli-dev
+        - libmbedtls-dev
+  - env:
+    - T=debug C="--with-gnutls --without-ssl"
+    - *clang
+    arch: arm64
+    compiler: clang
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *clang_packages
+        - libgnutls28-dev
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=debug C="--with-nss --without-ssl" NOTESTS=1 CPPFLAGS="-isystem /usr/include/nss"
+    - *clang
+    compiler: clang
+    arch: amr64
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *clang_packages
+        - libnss3-dev
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=iconv
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+  - env:
+    - T=cmake BORINGSSL=yes QUICHE=yes C="-DUSE_QUICHE=1 -DOPENSSL_ROOT_DIR=$HOME/boringssl"
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    - PKG_CONFIG_PATH="$HOME/quiche/target/release"
+    arch: arm64
+    before_install:
+    - eval "$(gimme stable)"; gimme --list  # Install latest Go (for boringssl)
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *common_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=cmake NGTCP2=yes C="-DUSE_NGTCP2=ON"
+    - *clang
+    - PKG_CONFIG_PATH="$HOME/ngbuild/lib/pkgconfig"
+    arch: arm64
+    compiler: clang
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *clang_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=torture
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *common_packages
+        - lcov
+        - libpsl-dev
+        - libbrotli-dev
+        - libssh2-1-dev
+  - env:
+    - T=distcheck
+    - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
+    arch: arm64
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *common_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=fuzzer
+    - *clang
+    arch: arm64
+    compiler: clang
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *clang_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=tidy
+    - *clang
+    arch: arm64
+    compiler: clang
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *clang_packages
+        - clang-tidy-9
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=scan-build
+    - *clang
+    arch: arm64
+    compiler: clang
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *clang_packages
+        - libpsl-dev
+        - libbrotli-dev
+  - env:
+    - T=debug CFLAGS="-fsanitize=address,undefined,signed-integer-overflow -fno-sanitize-recover=undefined,integer -Wformat -Werror=format-security -Werror=array-bounds -g" LDFLAGS="-fsanitize=address,undefined -fno-sanitize-recover=undefined,integer" LIBS="-ldl -lubsan"
+    - *clang
+    arch: arm64
+    compiler: clang
+    addons:
+      apt:
+        <<: *common_apt
+        packages:
+        - *clang_packages
+        - libpsl-dev
+        - libbrotli-dev
+
+   - env:
     - T=debug C="--enable-alt-svc"
     - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
     arch: arm64
